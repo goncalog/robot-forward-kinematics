@@ -6,6 +6,7 @@ This is a Python script that uses forward kinematics to generate a path for a tw
 To run the script and generate the graphs, please follow these instructions:
 
 1. Clone this repo
+
 ```bash
 git clone https://github.com/goncalog/robot-forward-kinematics.git
 cd robot-forward-kinematics
@@ -21,7 +22,14 @@ ros2 topic echo -f <topic-name> >> laser.txt
 ```
 (you need to have ROS2 installed for this to work; alternatively use a Docker image to run everything - [docs.ros.org/en/foxy/How-To-Guides/Run-2-nodes-in-single-or-separate-docker-containers.html](https://docs.ros.org/en/foxy/How-To-Guides/Run-2-nodes-in-single-or-separate-docker-containers.html))
 
-3. Run the python script
+3. Adjust data to your robot
+
+Update the following variables according to your robot:
+- robot_wheel_radius
+- robot_track_width
+- robot_d_time
+
+4. Run the python script
 
 In the root project folder *robot-forward-kinematics*:
 ```bash
