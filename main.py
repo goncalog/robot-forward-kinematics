@@ -1,4 +1,6 @@
 import math
+from bokeh.plotting import figure, output_file, save
+from IPython.core.display import display, HTML
 
 def get_angular_velocity(vel_left, vel_right, track_width):
     return (vel_right - vel_left) / track_width
@@ -70,32 +72,6 @@ def get_laser_data(path):
                 ranges = []
 
     return laser_data
-    
-left_wheel_velocities = get_data("wheel_velocity_axis0.txt")
-right_wheel_velocities = get_data("wheel_velocity_axis1.txt")
-
-robot_wheel_radius = 0.135
-robot_track_width = 0.67
-
-# position -> (x, y, angular_pos)
-robot_initial_pos = (0, 0, 0)
-robot_path = [robot_initial_pos]
-# Time interval between velocity measurements in seconds
-robot_d_time = 23666397740 / 1000000000 / len(left_wheel_velocities)
-
-left_wheel_velocities = [-x for x in left_wheel_velocities]
-
-left_wheel_velocities = [x * robot_wheel_radius for x in left_wheel_velocities]
-right_wheel_velocities = [x * robot_wheel_radius for x in right_wheel_velocities]
-
-print(left_wheel_velocities)
-print(right_wheel_velocities)
-
-for i in range(0, len(left_wheel_velocities)):
-    robot_path.append(get_new_position(robot_path[i], left_wheel_velocities[i], right_wheel_velocities[i], robot_track_width))
-
-from bokeh.plotting import figure, output_file, save
-from IPython.core.display import display, HTML
 
 def plot(path):
     f = figure(title = "Robot Path", plot_width = 300, plot_height = 300)
@@ -108,10 +84,6 @@ def plot(path):
 
     graph = open("line.html", "r")
     display(HTML(graph.read()))
-
-plot(robot_path)
-
-robot_laser_data = get_laser_data("laser.txt")
 
 def calc_scan_points(pos, scan):
     scan_points = []
@@ -131,8 +103,6 @@ def project_laser_scans(path, laser_data):
         projected_laser_scans.append(projected_laser_scan)
     return projected_laser_scans
 
-robot_projected_laser_scans = project_laser_scans(robot_path, robot_laser_data)
-
 def plot_laser_scans(projected_laser_scans):
     f = figure(title = "Robot Laser Scans", plot_width = 300, plot_height = 300)
     x = [pos[0] for pos in projected_laser_scans]
@@ -147,8 +117,6 @@ def plot_laser_scans(projected_laser_scans):
 
 def flatten(list_to_flatten):
     return [item for sublist in list_to_flatten for item in sublist]
-
-plot_laser_scans(flatten(robot_projected_laser_scans))
 
 def combined_plot(path, projected_laser_scans):
     f = figure(title = "Robot Path + Laser Scans", plot_width = 300, plot_height = 300)
@@ -165,5 +133,30 @@ def combined_plot(path, projected_laser_scans):
 
     graph = open("line_and_circle.html", "r")
     display(HTML(graph.read()))
+
+# Upload, process data and generate path graphs
+left_wheel_velocities = get_data("wheel_velocity_axis0.txt")
+right_wheel_velocities = get_data("wheel_velocity_axis1.txt")
+
+# position -> (x, y, angular_pos)
+robot_initial_pos = (0, 0, 0)
+robot_path = [robot_initial_pos]
+
+robot_wheel_radius = 0.135
+robot_track_width = 0.67
+# Time interval between velocity measurements in seconds
+robot_d_time = 23666397740 / 1000000000 / len(left_wheel_velocities)
+
+left_wheel_velocities = [-x for x in left_wheel_velocities]
+left_wheel_velocities = [x * robot_wheel_radius for x in left_wheel_velocities]
+right_wheel_velocities = [x * robot_wheel_radius for x in right_wheel_velocities]
+
+for i in range(0, len(left_wheel_velocities)):
+    robot_path.append(get_new_position(robot_path[i], left_wheel_velocities[i], right_wheel_velocities[i], robot_track_width))
+plot(robot_path)
+
+robot_laser_data = get_laser_data("laser.txt")
+robot_projected_laser_scans = project_laser_scans(robot_path, robot_laser_data)
+plot_laser_scans(flatten(robot_projected_laser_scans))
 
 combined_plot(robot_path, flatten(robot_projected_laser_scans))
